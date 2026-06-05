@@ -64,7 +64,12 @@ async def health():
     return {"status": "ok"}
 
 
-@app.post("/documents/upload", response_model=UploadResponse)
+@app.post(
+    "/documents/upload",
+    response_model=UploadResponse,
+    summary="Upload document",
+    description="Uploads invoice image and starts OCR processing."
+)
 async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...)
@@ -173,6 +178,7 @@ async def rag_search(
     results = search_documents(
         query=request.query,
         top_k=request.top_k,
+        document_id=request.document_id,
     )
 
     return SearchResponse(
@@ -190,6 +196,7 @@ async def rag_answer(
     result = answer_question(
         query=request.query,
         top_k=request.top_k,
+        document_id=request.document_id,
     )
 
     return AnswerResponse(

@@ -20,15 +20,21 @@ collection = client.get_or_create_collection(
 )
 
 
-def split_text_into_chunks(text: str, chunk_size: int = 700, overlap: int = 100) -> list[str]:
+def split_text_into_chunks(
+    text: str,
+    chunk_size: int = 300,
+    overlap: int = 50,
+) -> list[str]:
     if not text:
         return []
 
     chunks = []
+
     start = 0
 
     while start < len(text):
         end = start + chunk_size
+
         chunk = text[start:end].strip()
 
         if chunk:
@@ -37,7 +43,6 @@ def split_text_into_chunks(text: str, chunk_size: int = 700, overlap: int = 100)
         start += chunk_size - overlap
 
     return chunks
-
 
 def index_document(document_id: str, text: str) -> int:
     chunks = split_text_into_chunks(text)
@@ -70,10 +75,19 @@ def index_document(document_id: str, text: str) -> int:
 def search_documents(
     query: str,
     top_k: int = 3,
+    document_id: str | None = None,
 ):
+    where_filter = None
+
+    if document_id:
+        where_filter = {
+            "document_id": document_id
+        }
+
     results = collection.query(
         query_texts=[query],
         n_results=top_k,
+        where=where_filter,
     )
 
     output = []
@@ -95,10 +109,12 @@ def search_documents(
 def answer_question(
     query: str,
     top_k: int = 3,
+    document_id: str | None = None,
 ):
     results = search_documents(
         query=query,
         top_k=top_k,
+        document_id=document_id,
     )
 
     sources = [
