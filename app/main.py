@@ -4,10 +4,23 @@ import uuid
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 
 from app.ocr import extract_text
-from app.rag import index_document
+from app.rag import (
+    index_document,
+    search_documents,
+    answer_question,
+)
 from fastapi import FastAPI, UploadFile, File, HTTPException
 
-from app.schemas import UploadResponse, DocumentResponse, IndexResponse
+from app.schemas import (
+    UploadResponse,
+    DocumentResponse,
+    IndexResponse,
+    SearchRequest,
+    SearchResponse,
+    AnswerRequest,
+    AnswerResponse,
+)
+
 from app.storage import (
     UPLOAD_DIR,
     save_document_metadata,
@@ -147,4 +160,39 @@ async def index_document_endpoint(document_id: str):
         document_id=document_id,
         status="indexed",
         chunks_indexed=chunks_indexed,
+    )
+
+
+@app.post(
+    "/rag/search",
+    response_model=SearchResponse,
+)
+async def rag_search(
+    request: SearchRequest,
+):
+    results = search_documents(
+        query=request.query,
+        top_k=request.top_k,
+    )
+
+    return SearchResponse(
+        results=results
+    )
+
+
+@app.post(
+    "/rag/answer",
+    response_model=AnswerResponse,
+)
+async def rag_answer(
+    request: AnswerRequest,
+):
+    result = answer_question(
+        query=request.query,
+        top_k=request.top_k,
+    )
+
+    return AnswerResponse(
+        answer=result["answer"],
+        sources=result["sources"],
     )

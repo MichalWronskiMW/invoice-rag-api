@@ -65,3 +65,59 @@ def index_document(document_id: str, text: str) -> int:
     )
 
     return len(chunks)
+
+
+def search_documents(
+    query: str,
+    top_k: int = 3,
+):
+    results = collection.query(
+        query_texts=[query],
+        n_results=top_k,
+    )
+
+    output = []
+
+    documents = results["documents"][0]
+    metadatas = results["metadatas"][0]
+
+    for document, metadata in zip(documents, metadatas):
+        output.append(
+            {
+                "document_id": metadata["document_id"],
+                "chunk_text": document,
+            }
+        )
+
+    return output
+
+
+def answer_question(
+    query: str,
+    top_k: int = 3,
+):
+    results = search_documents(
+        query=query,
+        top_k=top_k,
+    )
+
+    sources = [
+        item["chunk_text"]
+        for item in results
+    ]
+
+    if not sources:
+        return {
+            "answer": "No relevant documents found.",
+            "sources": [],
+        }
+
+    answer = (
+        "Based on the retrieved document fragments:\n\n"
+        + "\n\n---\n\n".join(sources)
+    )
+
+    return {
+        "answer": answer,
+        "sources": sources,
+    }
