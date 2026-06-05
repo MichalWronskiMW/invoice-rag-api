@@ -2,6 +2,7 @@ from pathlib import Path
 
 import chromadb
 from chromadb.utils import embedding_functions
+from app.llm import generate_answer_with_ollama
 
 CHROMA_DIR = Path("data/vector_store/chroma_db")
 COLLECTION_NAME = "invoice_documents"
@@ -117,10 +118,7 @@ def answer_question(
         document_id=document_id,
     )
 
-    sources = [
-        item["chunk_text"]
-        for item in results
-    ]
+    sources = [item["chunk_text"] for item in results]
 
     if not sources:
         return {
@@ -128,10 +126,19 @@ def answer_question(
             "sources": [],
         }
 
-    answer = (
-        "Based on the retrieved document fragments:\n\n"
-        + "\n\n---\n\n".join(sources)
-    )
+    context = "\n\n---\n\n".join(sources)
+
+    try:
+        answer = generate_answer_with_ollama(
+            query=query,
+            context=context,
+        )
+    except Exception as e:
+        answer = (
+            "LLM generation failed. Returning retrieved context instead.\n\n"
+            f"Error: {e}\n\n"
+            f"{context}"
+        )
 
     return {
         "answer": answer,

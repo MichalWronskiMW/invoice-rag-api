@@ -8,3 +8,4 @@ numpy
 datasets
 chromadb
 sentence-transformers
+requests

@@ -45,4 +45,5 @@ class AnswerRequest(BaseModel):
 
 class AnswerResponse(BaseModel):
     answer: str
+    model: str
     sources: list[str]
