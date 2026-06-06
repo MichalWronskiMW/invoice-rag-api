@@ -201,5 +201,6 @@ async def rag_answer(
 
     return AnswerResponse(
         answer=result["answer"],
+        model="mistral:latest",
         sources=result["sources"],
     )
