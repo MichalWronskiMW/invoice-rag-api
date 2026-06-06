@@ -1,7 +1,7 @@
 from pathlib import Path
 import uuid
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, status
 
 from app.ocr import extract_text
 from app.rag import (
@@ -67,8 +67,9 @@ async def health():
 @app.post(
     "/documents/upload",
     response_model=UploadResponse,
+    status_code=status.HTTP_202_ACCEPTED,
     summary="Upload document",
-    description="Uploads invoice image and starts OCR processing."
+    description="Uploads invoice image and starts OCR processing.",
 )
 async def upload_document(
     background_tasks: BackgroundTasks,
@@ -119,6 +120,12 @@ async def get_document(document_id: str):
         raise HTTPException(
             status_code=404,
             detail="Document not found.",
+        )
+
+    if metadata.get("status") == "failed":
+        raise HTTPException(
+            status_code=500,
+            detail=metadata.get("error", "OCR processing failed."),
         )
 
     return metadata
