@@ -2,10 +2,9 @@ fastapi
 uvicorn[standard]
 python-multipart
 pydantic
-easyocr
 pillow
 numpy
-datasets
 chromadb
 sentence-transformers
 requests
+pytesseract
