@@ -1,14 +1,25 @@
-import requests
 import os
+
+import requests
+
 
 OLLAMA_URL = os.getenv(
     "OLLAMA_URL",
     "http://localhost:11434/api/generate",
 )
-OLLAMA_MODEL = "mistral:latest"
+
+OLLAMA_MODEL = os.getenv(
+    "OLLAMA_MODEL",
+    "mistral:latest",
+)
 
 
 def generate_answer_with_ollama(query: str, context: str) -> str:
+    """
+    Generate an answer using a local Ollama model.
+
+    The model must answer only from the provided document context.
+    """
     prompt = f"""
 You are an assistant that answers questions about invoices.
 
@@ -42,4 +53,5 @@ Answer:
     response.raise_for_status()
 
     data = response.json()
+
     return data["response"].strip()
